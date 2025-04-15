@@ -1,5 +1,6 @@
 import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { z } from 'vinxi'
 
 const myServerFn = createServerFn().validator(
@@ -15,18 +16,26 @@ const myServerFn = createServerFn().validator(
 
 export const Route = createFileRoute('/users/$usersId')({
   component: RouteComponent,
-  loader: async () => {
-    const data = await myServerFn({
-      data: {
-        randomText: 'Ram bahadur'
-      }
-    })
-    return data
-  }
+  // loader: async () => {
+  //   const data = await myServerFn({
+  //     data: {
+  //       randomText: 'Ram bahadur'
+  //     }
+  //   })
+  //   return data
+  // }
 })
 
 function RouteComponent() {
   const {usersId} = Route.useParams()
   const data = Route.useLoaderData()
-  return <div>Hello {usersId} - {data.message}!</div>
+  const {data: useLoaderData} = useSuspenseQuery({
+    queryKey: ['user',usersId],
+    queryFn: () => myServerFn({
+      data: {
+        randomText: 'hellNo'
+      }
+    })
+  })
+  return <div>Hello {usersId} - {useLoaderData.message}!</div>
 }
